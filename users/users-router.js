@@ -1,11 +1,11 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-// const restrict = require("../middleware/restrict");
+const restrict = require("../middleware/restrict");
 const Users = require("./users-model");
 
 const router = express.Router();
 
-router.get("/api/users", async (req, res, next) => {
+router.get("/api/users", restrict(), async (req, res, next) => {
     try {
         res.json(await Users.find());
     } catch (err) {
@@ -56,6 +56,10 @@ router.post("/api/login", async (req, res, next) => {
             });
         }
 
+        // generate a new session for this user,
+        // and sends back a session ID
+        req.session.user = user
+
         res.json({
             message: `Welcome ${user.username}!`
         });
@@ -64,7 +68,7 @@ router.post("/api/login", async (req, res, next) => {
     }
 });
 
-router.get("/logout", async (req, res, next) => {
+router.get("/api/logout", async (req, res, next) => {
     try {
         req.session.destroy(err => {
             if (err) {
